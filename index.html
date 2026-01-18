@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaptionAI - Viral Captions in Seconds</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(148, 163, 184, 0.1);
+            --glow: 0 0 20px rgba(168, 85, 247, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- UTILITIES --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .gradient-text {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .btn {
+            padding: 12px 32px;
+            border-radius: 50px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+        }
+
+        /* --- ANIMATIONS --- */
+        .hidden {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- HERO SECTION --- */
+        header {
+            padding: 20px 0;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        .typing-container {
+            height: 40px;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+            color: #a855f7;
+            font-weight: 500;
+        }
+
+        /* --- HOW IT WORKS --- */
+        .section {
+            padding: 100px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: #a855f7;
+        }
+
+        .step-icon {
+            font-size: 3rem;
+            color: #a855f7;
+            margin-bottom: 20px;
+        }
+
+        /* --- LIVE GENERATOR --- */
+        .generator-wrapper {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(30, 41, 59, 0.5) 100%);
+            border-radius: 30px;
+            padding: 40px;
+            border: 1px solid var(--border-color);
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: var(--glow);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #6366f1;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .output-box {
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 100px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .output-text {
+            font-size: 1.1rem;
+            width: 100%;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* --- FEATURES --- */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .feature-item i {
+            color: #6366f1;
+            font-size: 1.5rem;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            padding: 40px 0;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .hero-content h1 { font-size: 2.5rem; }
+            .controls { grid-template-columns: 1fr; }
+            .steps-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Cursor blinking animation */
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            background-color: #a855f7;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <div class="logo">
+                <i class="ph ph-robot"></i> CaptionAI
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container hero-content">
+            <h1 class="hidden">Generate <span class="gradient-text">Viral AI Captions</span><br>in Seconds</h1>
+            <p class="hidden">Perfect for Instagram Reels, TikTok, LinkedIn, and YouTube Shorts.</p>
+            
+            <div class="typing-container hidden">
+                "<span id="hero-typing"></span><span class="cursor">&nbsp;</span>"
+            </div>
+
+            <a href="#generator" class="btn btn-primary hidden">Generate Caption Free</a>
+        </div>
+    </section>
+
+    <section class="section" id="how-it-works">
+        <div class="container">
+            <div class="section-title hidden">
+                <h2>How It Works</h2>
+                <p>3 simple steps to viral content</p>
+            </div>
+            <div class="steps-grid">
+                <div class="card hidden">
+                    <div class="step-icon"><i class="ph ph-lightbulb"></i></div>
+                    <h3>1. Enter Topic</h3>
+                    <p>Simply type in what your photo or video is about. e.g., "Sunset at the beach"</p>
+                </div>
+                <div class="card hidden">
+                    <div class="step-icon"><i class="ph ph-sliders"></i></div>
+                    <h3>2. Choose Vibe</h3>
+                    <p>Select the platform and the tone (Funny, Professional, Inspirational).</p>
+                </div>
+                <div class="card hidden">
+                    <div class="step-icon"><i class="ph ph-magic-wand"></i></div>
+                    <h3>3. Generate</h3>
+                    <p>Click generate and watch the AI craft the perfect caption instantly.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="generator">
+        <div class="container">
+            <div class="section-title hidden">
+                <h2>Try It Now</h2>
+                <p>No login required. Totally free.</p>
+            </div>
+
+            <div class="generator-wrapper hidden">
+                <div class="input-group">
+                    <label>What is your post about?</label>
+                    <input type="text" id="topicInput" placeholder="e.g., Morning coffee, New gym PR, Office life...">
+                </div>
+
+                <div class="controls">
+                    <div class="input-group">
+                        <label>Platform</label>
+                        <select id="platformSelect">
+                            <option value="instagram">Instagram</option>
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="twitter">X (Twitter)</option>
+                            <option value="tiktok">TikTok</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Tone</label>
+                        <select id="toneSelect">
+                            <option value="funny">Funny / Witty</option>
+                            <option value="professional">Professional</option>
+                            <option value="motivational">Motivational</option>
+                            <option value="minimal">Minimalist</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" style="width: 100%;" onclick="generateCaption()">
+                    <i class="ph ph-sparkle"></i> Generate Caption
+                </button>
+
+                <div class="output-box">
+                    <button class="copy-btn" onclick="copyToClipboard()">
+                        <i class="ph ph-copy"></i> Copy
+                    </button>
+                    <p class="output-text" id="outputResult">Your AI caption will appear here...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="background-color: rgba(0,0,0,0.2);">
+        <div class="container">
+            <div class="section-title hidden">
+                <h2>Why Choose Us</h2>
+            </div>
+            <div class="features-grid hidden">
+                <div class="feature-item">
+                    <i class="ph ph-lightning"></i>
+                    <div>
+                        <h4>Lightning Fast</h4>
+                        <p style="color:var(--text-muted); font-size:0.9rem;">Results in milliseconds.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <i class="ph ph-lock-open"></i>
+                    <div>
+                        <h4>No Login Required</h4>
+                        <p style="color:var(--text-muted); font-size:0.9rem;">Just visit and generate.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <i class="ph ph-currency-circle-dollar"></i>
+                    <div>
+                        <h4>100% Free</h4>
+                        <p style="color:var(--text-muted); font-size:0.9rem;">No credit card needed.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <i class="ph ph-trend-up"></i>
+                    <div>
+                        <h4>Viral Optimized</h4>
+                        <p style="color:var(--text-muted); font-size:0.9rem;">Designed for engagement.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>Built with <i class="ph-fill ph-heart" style="color: #ef4444;"></i> and AI logic.</p>
+            <p style="font-size: 0.8rem; margin-top: 5px;">© 2023 CaptionAI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. HERO TYPING EFFECT ---
+        const heroTextElement = document.getElementById('hero-typing');
+        const heroPhrases = [
+            "POV: You found the perfect sunset 🌅",
+            "Hustle harder, dream bigger. 💼",
+            "Coffee: because adulting is hard. ☕️",
+            "New drops coming soon! 🔥"
+        ];
+        let phraseIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+
+        function typeHero() {
+            const currentPhrase = heroPhrases[phraseIndex];
+            
+            if (isDeleting) {
+                heroTextElement.textContent = currentPhrase.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                heroTextElement.textContent = currentPhrase.substring(0, charIndex + 1);
+                charIndex++;
+            }
+
+            let typeSpeed = isDeleting ? 50 : 100;
+
+            if (!isDeleting && charIndex === currentPhrase.length) {
+                typeSpeed = 2000; // Pause at end
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                phraseIndex = (phraseIndex + 1) % heroPhrases.length;
+                typeSpeed = 500;
+            }
+
+            setTimeout(typeHero, typeSpeed);
+        }
+        
+        // Start typing on load
+        document.addEventListener('DOMContentLoaded', typeHero);
+
+
+        // --- 2. CAPTION GENERATOR LOGIC ---
+        
+        // Mock Database of Templates
+        const templates = {
+            instagram: {
+                funny: [
+                    "Just dropped [TOPIC]. Mom said it's cool. 🤷‍♂️ #viral",
+                    "If [TOPIC] was a sport, I'd have a gold medal. 🥇",
+                    "Current mood: [TOPIC] and chill. ✨"
+                ],
+                professional: [
+                    "Excited to share my thoughts on [TOPIC]. A game changer for the industry. 🚀 #innovation",
+                    "Key takeaways from our latest work on [TOPIC]. 👇 #business #growth",
+                    "Success is built on [TOPIC]. Here is why. 💼"
+                ],
+                motivational: [
+                    "Don't stop until you master [TOPIC]. The grind never stops. 💪",
+                    "Your only limit is your mind. Go conquer [TOPIC]. 🔥",
+                    "Dream big. Work hard. Make [TOPIC] happen. ✨"
+                ],
+                minimal: [
+                    "[TOPIC]. That's it.",
+                    "Just [TOPIC]. ☁️",
+                    "Life lately: [TOPIC]."
+                ]
+            },
+            linkedin: {
+                funny: [
+                    "They told me to post about [TOPIC] for engagement. So here we are. 📈",
+                    "Trying to be a thought leader in [TOPIC]. How am I doing? 🤔"
+                ],
+                professional: [
+                    "I am thrilled to announce my latest project involving [TOPIC]. It has been an incredible journey.",
+                    "Reflecting on the impact of [TOPIC] in today's market. What are your thoughts? 👇"
+                ],
+                motivational: [
+                    "Leadership is about mastering [TOPIC] when no one else is watching.",
+                    "Transforming challenges into opportunities with [TOPIC]."
+                ],
+                minimal: [
+                    "Focus: [TOPIC].",
+                    "Thoughts on [TOPIC]."
+                ]
+            },
+            twitter: {
+                funny: [
+                    "Unpopular opinion: [TOPIC] is actually the best. Don't @ me.",
+                    "Day 134 of thinking about [TOPIC]."
+                ],
+                professional: [
+                    "5 reasons why [TOPIC] is the future. A thread. 🧵",
+                    "Just published a deep dive on [TOPIC]. Link in bio."
+                ],
+                motivational: [
+                    "If you want to win, you need to understand [TOPIC].",
+                    "Normalize mastering [TOPIC] before 9am."
+                ],
+                minimal: [
+                    "[TOPIC] > Everything else.",
+                    "It's a [TOPIC] kind of day."
+                ]
+            },
+             tiktok: {
+                funny: [
+                    "POV: You're obsessed with [TOPIC] 💀",
+                    "Tell me you love [TOPIC] without telling me..."
+                ],
+                professional: [
+                    "Watch this if you want to learn about [TOPIC] 🧠 #learnontiktok",
+                    "How to master [TOPIC] in 3 steps ✅"
+                ],
+                motivational: [
+                    "This is your sign to start [TOPIC] today. ✨",
+                    "Romanticize your life with [TOPIC]."
+                ],
+                minimal: [
+                    "[TOPIC] vibes only.",
+                    "Wait for the end... [TOPIC]"
+                ]
+            }
+        };
+
+        function generateCaption() {
+            const topic = document.getElementById('topicInput').value.trim();
+            const platform = document.getElementById('platformSelect').value;
+            const tone = document.getElementById('toneSelect').value;
+            const outputElement = document.getElementById('outputResult');
+
+            if (!topic) {
+                outputElement.innerHTML = "<span style='color:#ef4444'>Please enter a topic first!</span>";
+                return;
+            }
+
+            // Select random template
+            const platformTemplates = templates[platform] || templates['instagram']; // fallback
+            const toneTemplates = platformTemplates[tone] || platformTemplates['funny']; // fallback
+            const randomTemplate = toneTemplates[Math.floor(Math.random() * toneTemplates.length)];
+
+            // Replace placeholder
+            const finalCaption = randomTemplate.replace("[TOPIC]", topic);
+
+            // Animate Output (Typewriter effect for result)
+            outputElement.textContent = "";
+            let i = 0;
+            function typeResult() {
+                if (i < finalCaption.length) {
+                    outputElement.textContent += finalCaption.charAt(i);
+                    i++;
+                    setTimeout(typeResult, 30);
+                }
+            }
+            typeResult();
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('outputResult').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = "<i class='ph ph-check'></i> Copied!";
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+
+        // --- 3. SCROLL ANIMATION (Intersection Observer) ---
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show');
+                }
+            });
+        }, observerOptions);
+
+        const hiddenElements = document.querySelectorAll('.hidden');
+        hiddenElements.forEach((el) => observer.observe(el));
+
+    </script>
+</body>
+</html>
